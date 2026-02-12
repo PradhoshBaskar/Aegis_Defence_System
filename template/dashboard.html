@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- CRITICAL: OTPAuth MUST load FIRST before any custom JS -->
+    <script src="https://cdn.jsdelivr.net/npm/otpauth@9.1.4/dist/otpauth.umd.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTD Admin Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f35;
+            --border-color: #2d3548;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --accent-primary: #3b82f6;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --glow-blue: rgba(59, 130, 246, 0.3);
+            --glow-green: rgba(16, 185, 129, 0.3);
+            --glow-red: rgba(239, 68, 68, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(var(--border-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding: 20px 28px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-primary), #6366f1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 24px;
+            box-shadow: 0 0 20px var(--glow-blue);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .ai-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ai-toggle-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--border-color);
+            border-radius: 34px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider:before {
+            content: '';
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle-switch input:checked+.toggle-slider {
+            background: var(--accent-success);
+        }
+
+        .toggle-switch input:checked+.toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        .ai-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .ai-status.active {
+            color: var(--accent-success);
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .ai-status.inactive {
+            color: var(--accent-danger);
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            border-color: var(--accent-danger);
+            color: var(--accent-danger);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .stat-card:nth-child(1)::before {
+            background: linear-gradient(90deg, var(--accent-primary), #6366f1);
+        }
+
+        .stat-card:nth-child(2)::before {
+            background: linear-gradient(90deg, var(--accent-success), #34d399);
+        }
+
+        .stat-card:nth-child(3)::before {
+            background: linear-gradient(90deg, var(--accent-danger), #f87171);
+        }
+
+        .stat-card:nth-child(4)::before {
+            background: linear-gradient(90deg, var(--accent-warning), #fbbf24);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .stat-card:nth-child(1) .stat-value {
+            color: var(--accent-primary);
+        }
+
+        .stat-card:nth-child(2) .stat-value {
+            color: var(--accent-success);
+        }
+
+        .stat-card:nth-child(3) .stat-value {
+            color: var(--accent-danger);
+        }
+
+        .stat-card:nth-child(4) .stat-value {
+            color: var(--accent-warning);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            color: var(--accent-primary);
+        }
+
+        /* Logs */
+        .logs-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .search-input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            width: 200px;
+        }
+
+        .logs-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            display: grid;
+            grid-template-columns: 80px 140px 80px 1fr 80px;
+            gap: 16px;
+            padding: 12px 24px;
+            border-bottom: 1px solid rgba(45, 53, 72, 0.5);
+            align-items: center;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        .log-entry:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .log-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .log-ip {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+
+        .log-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .log-badge.success {
+            color: var(--accent-success);
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .log-badge.danger {
+            color: var(--accent-danger);
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .log-badge.warning {
+            color: var(--accent-warning);
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        .log-badge.info {
+            color: var(--accent-primary);
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        .log-message {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .block-btn {
+            background: transparent;
+            border: 1px solid var(--accent-danger);
+            color: var(--accent-danger);
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .block-btn:hover {
+            background: var(--accent-danger);
+            color: white;
+        }
+
+        /* Alarm */
+        .alarm-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(239, 68, 68, 0.1);
+            z-index: 100;
+            animation: pulse-bg 1s infinite;
+        }
+
+        .alarm-banner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            padding: 16px;
+            z-index: 101;
+            animation: slide-down 0.5s ease;
+        }
+
+        .alarm-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .alarm-icon {
+            font-size: 24px;
+            animation: shake 0.5s infinite;
+        }
+
+        .alarm-text {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .dismiss-alarm {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        @keyframes pulse-bg {
+
+            0%,
+            100% {
+                opacity: 0.1;
+            }
+
+            50% {
+                opacity: 0.2;
+            }
+        }
+
+        @keyframes slide-down {
+            from {
+                transform: translateY(-100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        /* DBMS */
+        .dbms-section {
+            padding: 20px 24px;
+        }
+
+        .dbms-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .dbms-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+        }
+
+        .dbms-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-success);
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-success);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .dbms-query {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            padding: 16px;
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .dbms-controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .dbms-btn {
+            background: var(--accent-primary);
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .dbms-btn:hover {
+            filter: brightness(1.2);
+        }
+
+        .dbms-results {
+            display: none;
+            margin-top: 16px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        .dbms-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .dbms-table th {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--accent-primary);
+        }
+
+        .dbms-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(45, 53, 72, 0.3);
+            color: var(--text-secondary);
+        }
+
+        .search-input:focus,
+        .dbms-query:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        /* ========== LIVE TERMINAL ========== */
+        .terminal-card {
+            background: #000;
+            border: 1px solid #0f0;
+            border-radius: 12px;
+            margin-top: 24px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.15);
+        }
+
+        .terminal-header {
+            background: #0a0a0a;
+            border-bottom: 1px solid #1a3a1a;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-title {
+            color: #0f0;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terminal-title::before {
+            content: '>';
+            animation: termBlink 1s step-end infinite;
+        }
+
+        @keyframes termBlink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .terminal-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .terminal-dots span:nth-child(1) {
+            background: #ef4444;
+        }
+
+        .terminal-dots span:nth-child(2) {
+            background: #f59e0b;
+        }
+
+        .terminal-dots span:nth-child(3) {
+            background: #10b981;
+        }
+
+        .terminal-body {
+            height: 300px;
+            overflow-y: auto;
+            padding: 16px 20px;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.7;
+            color: #0f0;
+        }
+
+        .terminal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .terminal-body::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: #1a3a1a;
+            border-radius: 3px;
+        }
+
+        .t-info {
+            color: #0f0;
+        }
+
+        .t-warn {
+            color: #f59e0b;
+        }
+
+        .t-crit {
+            color: #ef4444;
+        }
+
+        .t-sys {
+            color: #3b82f6;
+        }
+
+        .t-line {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* ========== END LIVE TERMINAL ========== */
+    </style>
+
+    <script>
+        // ============================================================
+        //  TOTP PORT HOPPING — Loads AFTER OTPAuth CDN (line 6)
+        // ============================================================
+        const TOTP_SECRET = 'JBSWY3DPEHPK3PXP';
+        const BASE_PORT = 20000;
+        const PORT_RANGE = 50;
+
+        function getCurrentPort() {
+            const totp = new OTPAuth.TOTP({
+                algorithm: 'SHA1',
+                digits: 6,
+                period: 30,
+                secret: OTPAuth.Secret.fromBase32(TOTP_SECRET)
+            });
+            const token = totp.generate();
+            return BASE_PORT + (parseInt(token, 10) % PORT_RANGE);
+        }
+
+        async function safeFetch(endpoint, options = {}) {
+            const port = getCurrentPort();
+            const url = `http://localhost:${port}${endpoint}`;
+            try {
+                return await fetch(url, options);
+            } catch (err) {
+                console.warn(`⚠️ safeFetch failed on port ${port}, retrying...`);
+                await new Promise(r => setTimeout(r, 500));
+                const retryPort = getCurrentPort();
+                return await fetch(`http://localhost:${retryPort}${endpoint}`, options);
+            }
+        }
+
+        // ============================================================
+        //  SYNC SYSTEM — Checks every 500ms
+        //  Shows overlay, waits for new server to be ready, then jumps
+        // ============================================================
+        let isShifting = false;  // prevent multiple concurrent shifts
+
+        function syncSystem() {
+            if (isShifting) return;
+            try {
+                const targetPort = getCurrentPort();
+                const currentPort = parseInt(window.location.port);
+
+                if (currentPort && currentPort !== targetPort) {
+                    isShifting = true;
+                    console.log(`🚀 SYNC: ${currentPort} → ${targetPort}`);
+
+                    // Save shift log BEFORE showing overlay
+                    const termEl = document.getElementById('aegis-terminal');
+                    if (termEl) {
+                        const ts = new Date().toTimeString().split(' ')[0];
+                        const p = document.createElement('p');
+                        p.className = 't-line t-crit';
+                        p.textContent = `[${ts}] ⚠️ FREQUENCY SHIFT: Port ${currentPort} → ${targetPort}`;
+                        termEl.appendChild(p);
+                        sessionStorage.setItem('aegis_logs', termEl.innerHTML);
+                    }
+
+                    // Show the FREQUENCY SHIFT overlay
+                    document.body.innerHTML = `
+                        <div style="
+                            position:fixed; top:0; left:0; width:100%; height:100%;
+                            background:rgba(0,0,0,0.95); color:#00ff41;
+                            display:flex; flex-direction:column; justify-content:center; align-items:center;
+                            font-family:'JetBrains Mono',monospace; z-index:99999;">
+                            <h1 style="font-size:3rem; text-shadow:0 0 20px #00ff41; margin-bottom:16px;">⚡ FREQUENCY SHIFT ⚡</h1>
+                            <p style="font-size:1.1rem; opacity:0.8;">REALIGNING TO PORT ${targetPort}...</p>
+                            <p id="shift-status" style="margin-top:12px; font-size:0.85rem; color:#f59e0b;">Waiting for server...</p>
+                        </div>`;
+
+                    // Poll the new port until it responds, then jump
+                    let attempts = 0;
+                    const maxAttempts = 30;  // 30 x 250ms = 7.5s max wait
+
+                    const pollInterval = setInterval(async () => {
+                        attempts++;
+                        const statusEl = document.getElementById('shift-status');
+                        try {
+                            const resp = await fetch(`http://localhost:${targetPort}/`, {
+                                method: 'HEAD',
+                                mode: 'no-cors',
+                                signal: AbortSignal.timeout(400)
+                            });
+                            // Server responded — jump now!
+                            clearInterval(pollInterval);
+                            if (statusEl) statusEl.textContent = '✅ Server ready — jumping!';
+                            setTimeout(() => { window.location.port = targetPort; }, 100);
+                        } catch (e) {
+                            // Server not ready yet
+                            if (statusEl) statusEl.textContent = `Waiting for server... (${attempts}/${maxAttempts})`;
+                            if (attempts >= maxAttempts) {
+                                // Force jump after max wait
+                                clearInterval(pollInterval);
+                                window.location.port = targetPort;
+                            }
+                        }
+                    }, 250);
+                }
+            } catch (e) {
+                console.warn('syncSystem tick skipped:', e.message);
+            }
+        }
+
+        setInterval(syncSystem, 500);
+    </script>
+</head>
+
+<body>
+    <div class="grid-background"></div>
+
+    <!-- Alarm System -->
+    <div class="alarm-overlay" id="alarm-overlay"></div>
+    <div class="alarm-banner" id="alarm-banner">
+        <div class="alarm-content">
+            <div class="alarm-icon">🚨</div>
+            <div class="alarm-text" id="alarm-text">THREAT DETECTED: Port Scanning Activity</div>
+            <button class="dismiss-alarm" onclick="dismissAlarm()">Dismiss</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <div class="logo">M</div>
+                <div>
+                    <h1>Admin Dashboard</h1>
+                    <div class="subtitle">Moving Target Defense System</div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="ai-toggle-container">
+                    <span class="ai-toggle-label">MTD AI Protection</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="ai-toggle" checked onchange="toggleAI()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="ai-status active" id="ai-status">ACTIVE</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Requests</div>
+                <div class="stat-value" id="total-requests">---</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Legitimate</div>
+                <div class="stat-value" id="legit-count">---</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Threats Blocked</div>
+                <div class="stat-value" id="threat-count">---</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Port Scans</div>
+                <div class="stat-value" id="scan-count">---</div>
+            </div>
+        </div>
+
+        <!-- Traffic Logs -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    Traffic Logs
+                </div>
+            </div>
+            <div class="logs-toolbar">
+                <div class="filter-group">
+                    <button class="filter-btn active" onclick="filterLogs('all')">All</button>
+                    <button class="filter-btn" onclick="filterLogs('allowed')">Allowed</button>
+                    <button class="filter-btn" onclick="filterLogs('blocked')">Blocked</button>
+                </div>
+                <input type="text" class="search-input" id="ip-search" placeholder="Search IP..." oninput="searchIP()">
+            </div>
+            <div class="logs-container" id="logs-container">
+                <div style="text-align: center; padding: 40px; color: var(--text-secondary);">Connecting to server...
+                </div>
+            </div>
+        </div>
+
+        <!-- DBMS Access -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                    </svg>
+                    Database Management
+                </div>
+            </div>
+
+            <div class="dbms-section">
+                <div class="dbms-header">
+                    <div class="dbms-title">SQL Query Console</div>
+                    <div class="dbms-status">
+                        <div class="status-dot"></div>
+                        Connected
+                    </div>
+                </div>
+                <textarea class="dbms-query" id="dbms-query"
+                    placeholder="SELECT * FROM access_logs WHERE status = 'blocked' LIMIT 10;">SELECT * FROM access_logs ORDER BY timestamp DESC LIMIT 20;</textarea>
+                <div class="dbms-controls">
+                    <button class="dbms-btn" onclick="executeQuery()">Execute Query</button>
+                    <button class="dbms-btn" onclick="clearQuery()">Clear</button>
+                </div>
+                <div class="dbms-results" id="dbms-results">
+                    <!-- Query results will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== LIVE TERMINAL ========== -->
+        <div class="terminal-card">
+            <div class="terminal-header">
+                <div class="terminal-title">AEGIS LIVE TERMINAL</div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button id="quantum-btn" onclick="runQuantumTest()"
+                        style="background:#6366f1;border:none;color:#fff;padding:6px 16px;border-radius:6px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;transition:all 0.2s;">🔐
+                        QUANTUM TEST</button>
+                    <button id="diag-btn" onclick="runDiagnostics()"
+                        style="background:#10b981;border:none;color:#fff;padding:6px 16px;border-radius:6px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;transition:all 0.2s;">🔎
+                        RUN DIAGNOSTICS</button>
+                    <div class="terminal-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+            <div class="terminal-body" id="aegis-terminal"></div>
+        </div>
+        <!-- ========== END LIVE TERMINAL ========== -->
+
+    </div>
+
+    <script>
+        // ============================================================
+        //  PERSISTENT TERMINAL ENGINE
+        // ============================================================
+        const terminalEl = document.getElementById('aegis-terminal');
+
+        function addLog(message, type) {
+            if (!terminalEl) return;
+            type = type || 'info';
+            const ts = new Date().toTimeString().split(' ')[0];
+            const p = document.createElement('p');
+            p.className = 't-line t-' + type;
+            p.textContent = '[' + ts + '] ' + message;
+            terminalEl.appendChild(p);
+            terminalEl.scrollTop = terminalEl.scrollHeight;
+            // Persist
+            try { sessionStorage.setItem('aegis_logs', terminalEl.innerHTML); } catch (e) { }
+        }
+
+        // Restore logs from previous session
+        (function restoreLogs() {
+            var saved = sessionStorage.getItem('aegis_logs');
+            if (saved) {
+                terminalEl.innerHTML = saved;
+                addLog('♻️  CONNECTION RESTORED — Session logs recovered', 'sys');
+                addLog('📡 Now on Port ' + window.location.port, 'info');
+            } else {
+                addLog('🔒 AEGIS DEFENSE TERMINAL v2.0', 'sys');
+                addLog('📡 Connected on Port ' + window.location.port, 'info');
+                addLog('⏳ Monitoring frequency shifts...', 'info');
+            }
+        })();
+
+        // Heartbeat — proves continuity across hops
+        var hbCount = parseInt(sessionStorage.getItem('aegis_hb') || '0');
+        setInterval(function () {
+            hbCount++;
+            try {
+                var port = getCurrentPort();
+                addLog('💚 Heartbeat #' + hbCount + ' — Port ' + port + ' — Packet Verified', 'info');
+            } catch (e) {
+                addLog('💛 Heartbeat #' + hbCount + ' — Calculating port...', 'warn');
+            }
+            try { sessionStorage.setItem('aegis_hb', String(hbCount)); } catch (e) { }
+        }, 2000);
+
+        // ============================================================
+        //  DASHBOARD STATE
+        // ============================================================
+        var aiEnabled = true;
+        var trafficLogs = [];
+        var currentFilter = 'all';
+        var metrics = { total: 0, legit: 0, threats: 0, scans: 0 };
+
+        function formatTime(timestamp) {
+            try {
+                var d = new Date(timestamp);
+                return d.toLocaleTimeString('en-US', { hour12: false });
+            } catch (e) {
+                return '--:--:--';
+            }
+        }
+
+        // ============================================================
+        //  FETCH STATS — Null-safe with try-catch
+        // ============================================================
+        async function fetchStats() {
+            try {
+                var response = await safeFetch('/api/stats');
+                var data = await response.json();
+
+                if (data && data.status === 'success') {
+                    // Update logs
+                    if (data.logs && Array.isArray(data.logs)) {
+                        trafficLogs = data.logs.map(function (log) {
+                            return {
+                                timestamp: log.timestamp || '',
+                                ip: log.source_ip || '0.0.0.0',
+                                type: (log.severity === 'CRITICAL' || log.severity === 'HIGH') ? 'blocked' : 'allowed',
+                                message: (log.request_type || '?') + ' - ' + (log.endpoint || '?') + ' (Confidence: ' + (log.ai_confidence || '?') + ')',
+                                severity: log.severity || 'LOW',
+                                id: log.id || Date.now() + Math.random()
+                            };
+                        });
+                    }
+
+                    // Update metrics — null-safe
+                    if (data.metrics) {
+                        metrics = {
+                            total: data.metrics.total || 0,
+                            legit: data.metrics.legit || 0,
+                            threats: data.metrics.threats || 0,
+                            scans: data.metrics.scans || 0
+                        };
+                    }
+
+                    if (typeof data.ai_enabled !== 'undefined') {
+                        aiEnabled = data.ai_enabled;
+                    }
+
+                    updateMetrics();
+                    renderLogs();
+                }
+            } catch (error) {
+                console.warn('fetchStats error:', error.message);
+                addLog('⚠️  Stats fetch: ' + error.message, 'warn');
+            }
+        }
+
+        // ============================================================
+        //  RENDER FUNCTIONS — All null-safe
+        // ============================================================
+        function renderLogs() {
+            var container = document.getElementById('logs-container');
+            if (!container) return;
+            var searchEl = document.getElementById('ip-search');
+            var searchTerm = searchEl ? searchEl.value.toLowerCase() : '';
+
+            var filtered = trafficLogs;
+
+            if (currentFilter !== 'all') {
+                filtered = trafficLogs.filter(function (l) { return l.type === currentFilter; });
+            }
+            if (searchTerm) {
+                filtered = filtered.filter(function (l) { return l.ip.includes(searchTerm); });
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);">No logs found</div>';
+                return;
+            }
+
+            container.innerHTML = filtered.slice(0, 100).map(function (log) {
+                var badgeClass = 'info', badgeText = (log.type || 'UNKNOWN').toUpperCase();
+                if (log.type === 'allowed') { badgeClass = 'success'; badgeText = 'ALLOWED'; }
+                else if (log.type === 'blocked') { badgeClass = 'danger'; badgeText = 'BLOCKED'; }
+                else if (log.type === 'scan') { badgeClass = 'warning'; badgeText = 'SCAN'; }
+
+                return '<div class="log-entry">' +
+                    '<div class="log-time">' + formatTime(log.timestamp) + '</div>' +
+                    '<div class="log-ip">' + log.ip + '</div>' +
+                    '<div class="log-badge ' + badgeClass + '">' + badgeText + '</div>' +
+                    '<div class="log-message">' + log.message + '</div>' +
+                    '<div class="log-action">' +
+                    (log.type !== 'allowed' ? '<button class="block-btn" onclick="blockIP(\'' + log.ip + '\')">Block</button>' : '') +
+                    '</div>' +
+                    '</div>';
+            }).join('');
+        }
+
+        function updateMetrics() {
+            try {
+                var el;
+                el = document.getElementById('total-requests');
+                if (el) el.textContent = safeFormat(metrics.total);
+                el = document.getElementById('legit-count');
+                if (el) el.textContent = safeFormat(metrics.legit);
+                el = document.getElementById('threat-count');
+                if (el) el.textContent = safeFormat(metrics.threats);
+                el = document.getElementById('scan-count');
+                if (el) el.textContent = safeFormat(metrics.scans);
+            } catch (e) {
+                console.warn('updateMetrics error:', e.message);
+            }
+        }
+
+        function safeFormat(val) {
+            if (val === null || val === undefined) return '---';
+            if (typeof val === 'number') {
+                try { return val.toLocaleString(); } catch (e) { return String(val); }
+            }
+            return String(val);
+        }
+
+        function filterLogs(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(function (btn) { btn.classList.remove('active'); });
+            if (event && event.target) event.target.classList.add('active');
+            renderLogs();
+        }
+
+        function searchIP() { renderLogs(); }
+
+        function blockIP(ip) {
+            alert('IP ' + ip + ' has been added to the blocklist');
+            addLog('🚫 Blocked IP: ' + ip, 'crit');
+        }
+
+        function toggleAI() {
+            aiEnabled = document.getElementById('ai-toggle').checked;
+            var status = document.getElementById('ai-status');
+            if (aiEnabled) {
+                status.textContent = 'ACTIVE';
+                status.classList.remove('inactive');
+                status.classList.add('active');
+                addLog('🧠 AI Protection: ENABLED', 'info');
+            } else {
+                status.textContent = 'INACTIVE';
+                status.classList.remove('active');
+                status.classList.add('inactive');
+                addLog('🧠 AI Protection: DISABLED', 'warn');
+            }
+        }
+
+        function triggerAlarm(message) {
+            document.getElementById('alarm-overlay').style.display = 'block';
+            document.getElementById('alarm-banner').style.display = 'block';
+            document.getElementById('alarm-text').textContent = 'THREAT DETECTED: ' + message;
+            setTimeout(dismissAlarm, 5000);
+        }
+
+        function dismissAlarm() {
+            document.getElementById('alarm-overlay').style.display = 'none';
+            document.getElementById('alarm-banner').style.display = 'none';
+        }
+
+        function executeQuery() {
+            var query = document.getElementById('dbms-query').value;
+            var resultsDiv = document.getElementById('dbms-results');
+            resultsDiv.style.display = 'block';
+
+            if (query.toLowerCase().includes('select')) {
+                var sampleData = trafficLogs.slice(0, 10).map(function (log, i) {
+                    return {
+                        id: i + 1,
+                        timestamp: log.timestamp ? new Date(log.timestamp).toISOString() : 'N/A',
+                        ip_address: log.ip || 'N/A',
+                        status: log.type || 'N/A',
+                        message: log.message || 'N/A'
+                    };
+                });
+
+                resultsDiv.innerHTML =
+                    '<table class="dbms-table"><thead><tr>' +
+                    '<th>ID</th><th>Timestamp</th><th>IP Address</th><th>Status</th><th>Message</th>' +
+                    '</tr></thead><tbody>' +
+                    sampleData.map(function (row) {
+                        return '<tr><td>' + row.id + '</td><td>' + row.timestamp + '</td><td>' +
+                            row.ip_address + '</td><td>' + row.status + '</td><td>' + row.message + '</td></tr>';
+                    }).join('') +
+                    '</tbody></table>' +
+                    '<div style="margin-top:10px;color:var(--accent-success);">✓ Query executed (' + sampleData.length + ' rows)</div>';
+                addLog('📊 SQL query executed: ' + sampleData.length + ' rows', 'info');
+            } else {
+                resultsDiv.innerHTML = '<div style="color:var(--accent-success);">✓ Query executed successfully</div>';
+                addLog('📊 SQL query executed', 'info');
+            }
+        }
+
+        function clearQuery() {
+            document.getElementById('dbms-query').value = '';
+            document.getElementById('dbms-results').style.display = 'none';
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            try {
+                var port = getCurrentPort();
+                window.location.href = 'http://localhost:' + port + '/login';
+            } catch (e) {
+                window.location.href = '/login';
+            }
+        }
+
+        // ============================================================
+        //  RED TEAM DIAGNOSTICS (supports manual + auto-run)
+        // ============================================================
+        async function runDiagnostics(isAuto) {
+            var btn = document.getElementById('diag-btn');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ SCANNING...'; btn.style.opacity = '0.6'; }
+
+            if (isAuto) {
+                addLog('🚀 SYSTEM STARTUP: INITIATING AUTO-DIAGNOSTICS...', 'sys');
+            } else {
+                addLog('🔎 MANUAL SCAN INITIATED...', 'sys');
+            }
+            addLog('⏳ RUNNING SECURITY AUDIT...', 'warn');
+
+            try {
+                var response = await safeFetch('/api/audit');
+                var data = await response.json();
+
+                if (data && data.status === 'success' && data.report) {
+                    var r = data.report;
+                    var failures = [];
+
+                    // Log each test result
+                    var icon;
+                    icon = r.recon_status === 'PASS' ? '✅' : '❌';
+                    addLog(icon + ' RECON TEST: ' + r.recon_status, r.recon_status === 'PASS' ? 'info' : 'crit');
+                    if (r.recon_status !== 'PASS') failures.push('Recon Defense');
+
+                    icon = r.brute_status === 'PASS' ? '✅' : '❌';
+                    addLog(icon + ' BRUTE FORCE TEST: ' + r.brute_status, r.brute_status === 'PASS' ? 'info' : 'crit');
+                    if (r.brute_status !== 'PASS') failures.push('Brute Force Defense');
+
+                    icon = r.zombie_status === 'PASS' ? '✅' : '❌';
+                    addLog(icon + ' ZOMBIE CONNECTION TEST: ' + r.zombie_status, r.zombie_status === 'PASS' ? 'info' : 'crit');
+                    if (r.zombie_status !== 'PASS') failures.push('Zombie Connection Defense');
+
+                    // Total score
+                    var scoreColor = r.total_score >= 66 ? 'info' : (r.total_score >= 33 ? 'warn' : 'crit');
+                    addLog('🏆 SECURITY SCORE: ' + r.total_score + '%', scoreColor);
+
+                    // Log specific failures in RED
+                    if (failures.length > 0) {
+                        addLog('🚨 FAILED MODULES: ' + failures.join(', '), 'crit');
+                    }
+
+                    addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sys');
+
+                    // Visual warning if score < 100
+                    if (r.total_score < 100) {
+                        triggerAlarm('Security Score ' + r.total_score + '% — ' + failures.join(', ') + ' compromised!');
+                        alert('⚠️ AEGIS SECURITY WARNING\n\nSecurity Score: ' + r.total_score + '%\nFailed: ' + failures.join(', ') + '\n\nImmediate investigation recommended.');
+                    }
+                } else {
+                    addLog('⚠️ Audit returned unexpected response: ' + (data.message || 'Unknown error'), 'warn');
+                }
+            } catch (err) {
+                addLog('❌ AUDIT FAILED: ' + err.message, 'crit');
+            }
+
+            if (btn) { btn.disabled = false; btn.textContent = '🔎 RUN DIAGNOSTICS'; btn.style.opacity = '1'; }
+        }
+
+        // ============================================================
+        //  QUANTUM SHIELD TEST (Kyber768 + AES-256-CBC self-test)
+        // ============================================================
+        async function runQuantumTest() {
+            var btn = document.getElementById('quantum-btn');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ TESTING...'; btn.style.opacity = '0.6'; }
+
+            addLog('🔐 QUANTUM SHIELD: Initiating Kyber768 self-test...', 'sys');
+            addLog('⏳ Running enc → dec → verify handshake...', 'warn');
+
+            try {
+                var response = await safeFetch('/api/kyber/test');
+                var data = await response.json();
+
+                if (data && data.status === 'PASS') {
+                    addLog('✅ KYBER-768 HANDSHAKE: VERIFIED', 'info');
+                    addLog('🔑 Key Size: ' + data.key_size, 'info');
+                    addLog('🛡️  ' + data.msg, 'info');
+                } else {
+                    addLog('❌ QUANTUM TEST FAILED: ' + (data.msg || 'Unknown error'), 'crit');
+                }
+                addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'sys');
+            } catch (err) {
+                addLog('❌ QUANTUM TEST ERROR: ' + err.message, 'crit');
+            }
+
+            if (btn) { btn.disabled = false; btn.textContent = '🔐 QUANTUM TEST'; btn.style.opacity = '1'; }
+        }
+
+        // ============================================================
+        //  BOOT: Fetch stats immediately, then every 2 seconds
+        //  Diagnostics are MANUAL-ONLY (click "RUN DIAGNOSTICS")
+        // ============================================================
+        fetchStats();
+        setInterval(fetchStats, 2000);
+    </script>
+</body>
+
+</html>

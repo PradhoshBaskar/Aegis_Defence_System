@@ -1,0 +1,77 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "send-otp",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a0330539-c5a6-482d-bb45-7d297846ce65",
+      "name": "Webhook",
+      "webhookId": "87772b7e-52ed-4020-ab61-e5f129d9d394",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RWXwoalLExuGFeZk",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=🔐 **LOGIN ATTEMPT DETECTED**\n\n👤 User: {{$json.body.user}}\n\n🔑 OTP Code: ||{{$json.body.otp}}||\n\n⏳ Expires in 30 seconds.\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "eb3d4cbd-addb-49a8-8fab-7bc88e5348cb",
+      "name": "Discord",
+      "webhookId": "1ad2f575-1629-41af-b37d-b5b4d5128655",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "cihzoJ9LvLapQGeQ",
+          "name": "Discord Webhook account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "cf6c5cb9-9025-4a6b-8b00-135ff07c028f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0b7f8c00356fb702d23c2c8b6105a665165830b6cd4530987313442310c04433"
+  },
+  "id": "_uODYfuaMEms4GR9ntZTV",
+  "tags": []
+}

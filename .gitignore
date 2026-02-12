@@ -1,5 +1,39 @@
-.venv/
-__pycache__/
-.vscode/
-*.db
+# ── Environment & Secrets ──
 .env
+.env.*
+!.env.example
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── Virtual Environments ──
+.venv/
+venv/
+env/
+
+# ── IDE / Editor ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS ──
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# ── Logs & Test Output ──
+*.log
+test_output.txt
+test_result.txt
+
+# ── Database ──
+*.db
+*.sqlite3

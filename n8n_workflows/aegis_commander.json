@@ -1,0 +1,196 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "aegis-alert",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "129d2485-dc49-4f97-92bd-cf43f102ae5d",
+      "name": "Webhook",
+      "webhookId": "f79e89b0-efa7-4572-ad31-761c51152038"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "905c1c2f-aff0-4872-a96f-e119d3eb0839",
+              "leftValue": "={{ $json.body.severity }}",
+              "rightValue": "CRITICAL",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "c4269fe1-8588-4f7e-9c6f-a998325ab092",
+              "leftValue": "={{$json.body.severity}}",
+              "rightValue": "HIGH",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "052c9286-228b-4700-a752-cf9f9602e86d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "options": {},
+        "embeds": {
+          "values": [
+            {
+              "description": "=**Threat:** {{ $json.body.threat_type }}\n**Attacker IP:** {{ $json.body.attacker_ip }}\n**Confidence:** {{ $json.body.details.ai_confidence }}\n**Action:** IP Banned via Firewall.",
+              "color": "#FF0000",
+              "timestamp": "2026-02-06T19:32:59",
+              "title": "SECURITY BREACH DETECTED"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -16
+      ],
+      "id": "c095b6d8-3d62-42ff-aad7-bb9e46b3b7ad",
+      "name": "Discord",
+      "webhookId": "5ad45e36-c08d-4f50-9eca-1644249db71e",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "vjBze9w38UCQXfY3",
+          "name": "Discord Webhook account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "MoRmViLnSs8pJYOz",
+          "mode": "list",
+          "cachedResultName": "Forensics",
+          "cachedResultUrl": "/projects/E0QaFUqLIAzEEyYe/datatables/MoRmViLnSs8pJYOz"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "attaker_ip": "={{ $json.body.attacker_ip }}",
+            "treath_type": "={{ $json.body.threat_type }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "attaker_ip",
+              "displayName": "attaker_ip",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "treath_type",
+              "displayName": "treath_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        192
+      ],
+      "id": "05f3e8ca-b35a-4dd7-a879-102fb11c6f49",
+      "name": "Insert row"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Indian/Maldives",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "79121703-6ba9-4516-b8c5-f784dbf9ea57",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5a05d96e98b5879af040197cfa5973b228472d67d5b4ffd4e758c93d09cb4aa3"
+  },
+  "id": "G45mhYTB7nnYkDyX_1-Lp",
+  "tags": []
+}

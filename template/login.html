@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTD Admin Login</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f35;
+            --border-color: #2d3548;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --accent-primary: #3b82f6;
+            --accent-success: #10b981;
+            --accent-danger: #ef4444;
+            --glow-blue: rgba(59, 130, 246, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(var(--border-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 48px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--accent-primary), #6366f1);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 32px;
+            box-shadow: 0 0 30px var(--glow-blue);
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--glow-blue);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent-primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .login-btn:hover {
+            background: #2563eb;
+            box-shadow: 0 0 30px var(--glow-blue);
+            transform: translateY(-2px);
+        }
+
+        .warning-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--accent-danger);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--accent-danger);
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--accent-success);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--accent-success);
+            display: none;
+        }
+
+        .honeypot-redirect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: glitchIn 0.5s ease;
+        }
+
+        @keyframes glitchIn {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            25%,
+            75% {
+                opacity: 0.8;
+                transform: translateX(5px);
+            }
+
+            50% {
+                opacity: 0.9;
+                transform: translateX(-5px);
+            }
+        }
+
+        .honeypot-content {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .honeypot-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .honeypot-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent-danger);
+            margin-bottom: 16px;
+        }
+
+        .honeypot-message {
+            font-size: 18px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .loading-dots {
+            display: inline-block;
+            margin-left: 8px;
+        }
+
+        .loading-dots span {
+            animation: blink 1.4s infinite;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes blink {
+
+            0%,
+            80%,
+            100% {
+                opacity: 0;
+            }
+
+            40% {
+                opacity: 1;
+            }
+        }
+
+        .demo-hint {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--accent-primary);
+            text-align: center;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.4.1/otpauth.umd.min.js"></script>
+    <script>
+        // ================= TOTP PORT HOPPING =================
+        const TOTP_SECRET = 'JBSWY3DPEHPK3PXP';
+        const BASE_PORT = 20000;
+        const PORT_RANGE = 50;
+
+        function getCurrentPort() {
+            const totp = new OTPAuth.TOTP({
+                algorithm: 'SHA1',
+                digits: 6,
+                period: 30,
+                secret: OTPAuth.Secret.fromBase32(TOTP_SECRET)
+            });
+            const token = totp.generate();
+            return BASE_PORT + (parseInt(token, 10) % PORT_RANGE);
+        }
+
+        async function safeFetch(endpoint, options = {}) {
+            const port = getCurrentPort();
+            const url = `http://localhost:${port}${endpoint}`;
+            try {
+                return await fetch(url, options);
+            } catch (err) {
+                console.warn(`⚠️ Request failed on port ${port}, retrying...`);
+                await new Promise(r => setTimeout(r, 1000));
+                const retryPort = getCurrentPort();
+                const retryUrl = `http://localhost:${retryPort}${endpoint}`;
+                return await fetch(retryUrl, options);
+            }
+        }
+
+        // ==========================================
+        //  THE MISSING LINK: BROWSER AUTO-JUMP
+        //  (Remove this entire block if not needed)
+        // ==========================================
+        function syncBrowserTab() {
+            const targetPort = getCurrentPort();
+            const currentPort = parseInt(window.location.port);
+
+            if (currentPort && currentPort !== targetPort) {
+                console.log(`🚀 SHIFTING: ${currentPort} -> ${targetPort}`);
+
+                document.body.innerHTML = `
+                    <div style="
+                        position:fixed; top:0; left:0; width:100%; height:100%;
+                        background:rgba(0,0,0,0.95); color:#00ff41;
+                        display:flex; flex-direction:column; justify-content:center; align-items:center;
+                        font-family:monospace; z-index:9999;">
+                        <h1 style="font-size:3rem; text-shadow: 0 0 10px #00ff41;">⚡ FREQUENCY SHIFT ⚡</h1>
+                        <p>REALIGNING TO PORT ${targetPort}...</p>
+                    </div>`;
+
+                setTimeout(() => {
+                    window.location.port = targetPort;
+                }, 1500);
+            }
+        }
+
+        setInterval(syncBrowserTab, 1000);
+        // ==========================================
+    </script>
+</head>
+
+<body>
+    <div class="grid-background"></div>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo-section">
+                <div class="logo">M</div>
+                <h1>Admin Portal</h1>
+                <div class="subtitle">Moving Target Defense System</div>
+            </div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" placeholder="+1 (555) 123-4567" required>
+                </div>
+
+                <button type="submit" class="login-btn">Sign In</button>
+
+                <div class="warning-message" id="warning">
+                    Invalid credentials. Please try again.
+                </div>
+
+                <div class="success-message" id="success">
+                    ✓ Credentials verified! Sending OTP...
+                </div>
+
+                <div class="demo-hint">
+                    💡 Demo: admin / admin / any phone number
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="honeypot-redirect" id="honeypot">
+        <div class="honeypot-content">
+            <div class="honeypot-icon">🍯</div>
+            <div class="honeypot-title">ACCESS DENIED</div>
+            <div class="honeypot-message">
+                Unauthorized access detected<br>
+                Redirecting to honeypot environment<span
+                    class="loading-dots"><span>.</span><span>.</span><span>.</span></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const phone = document.getElementById('phone').value;
+            const warning = document.getElementById('warning');
+            const success = document.getElementById('success');
+
+            // Hide previous messages
+            warning.style.display = 'none';
+            success.style.display = 'none';
+
+            try {
+                // Create form data
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('password', password);
+                formData.append('phone', phone);
+
+                // Call backend API (TOTP port-aware)
+                const response = await safeFetch('/api/login', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    // Show success message
+                    success.style.display = 'block';
+                    success.textContent = '✓ Credentials verified! Sending OTP...';
+
+                    // Store username for OTP page
+                    sessionStorage.setItem('username', username);
+                    sessionStorage.setItem('phone', phone);
+
+                    // Redirect to OTP page
+                    setTimeout(() => {
+                        window.location.href = '/otp';
+                    }, 1500);
+                } else {
+                    // Show error message
+                    warning.style.display = 'block';
+                    warning.textContent = data.message || 'Invalid credentials. Please try again.';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                warning.style.display = 'block';
+                warning.textContent = 'Connection error. Please try again.';
+            }
+        });
+    </script>
+</body>
+
+</html>

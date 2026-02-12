@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f35;
+            --border-color: #2d3548;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --accent-primary: #3b82f6;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .honeypot-container {
+            max-width: 800px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .honeypot-icon {
+            font-size: 120px;
+            margin-bottom: 30px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--accent-warning), var(--accent-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .message {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+
+        .terminal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: left;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .terminal-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #ef4444; }
+        .terminal-dot.yellow { background: #f59e0b; }
+        .terminal-dot.green { background: #10b981; }
+
+        .terminal-content {
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--accent-success);
+        }
+
+        .terminal-line {
+            margin-bottom: 8px;
+            opacity: 0;
+            animation: typeIn 0.3s ease forwards;
+        }
+
+        .terminal-line:nth-child(1) { animation-delay: 0.5s; }
+        .terminal-line:nth-child(2) { animation-delay: 1s; }
+        .terminal-line:nth-child(3) { animation-delay: 1.5s; }
+        .terminal-line:nth-child(4) { animation-delay: 2s; }
+        .terminal-line:nth-child(5) { animation-delay: 2.5s; }
+        .terminal-line:nth-child(6) { animation-delay: 3s; }
+        .terminal-line:nth-child(7) { animation-delay: 3.5s; }
+
+        @keyframes typeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .prompt {
+            color: var(--accent-primary);
+        }
+
+        .warning-text {
+            color: var(--accent-warning);
+        }
+
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+        }
+
+        .info-card-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .info-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .info-card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-success);
+        }
+
+        .glitch {
+            animation: glitch 1s infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        .back-link {
+            margin-top: 40px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .back-link a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .back-link a:hover {
+            color: var(--accent-success);
+        }
+    </style>
+</head>
+<body>
+    <div class="honeypot-container">
+        <div class="honeypot-icon">🍯</div>
+        <h1 class="glitch">Welcome to the Honeypot</h1>
+        <p class="message">
+            You've been redirected to an isolated environment.<br>
+            All activities are being monitored and logged for security analysis.
+        </p>
+
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="terminal-dot red"></div>
+                <div class="terminal-dot yellow"></div>
+                <div class="terminal-dot green"></div>
+            </div>
+            <div class="terminal-content" id="terminal-output">
+                <div class="terminal-line"><span class="prompt">root@mtd-honeypot:~$</span> cat /var/log/intrusion.log</div>
+                <div class="terminal-line">[<span class="warning-text">WARNING</span>] Unauthorized access attempt detected</div>
+                <div class="terminal-line">[INFO] Attacker IP: <span id="attacker-ip">192.168.1.100</span></div>
+                <div class="terminal-line">[INFO] Failed authentication attempts: <span id="attempt-count">3</span></div>
+                <div class="terminal-line">[INFO] Session isolated to honeypot environment</div>
+                <div class="terminal-line">[INFO] Logging all network activity...</div>
+                <div class="terminal-line"><span class="prompt">root@mtd-honeypot:~$</span> <span class="blinking-cursor">_</span></div>
+            </div>
+        </div>
+
+        <div class="info-cards">
+            <div class="info-card">
+                <div class="info-card-icon">⏱️</div>
+                <div class="info-card-title">Session Duration</div>
+                <div class="info-card-value" id="session-time">0:00</div>
+            </div>
+            <div class="info-card">
+                <div class="info-card-icon">📡</div>
+                <div class="info-card-title">Packets Captured</div>
+                <div class="info-card-value" id="packet-count">0</div>
+            </div>
+            <div class="info-card">
+                <div class="info-card-icon">🔍</div>
+                <div class="info-card-title">Fingerprints</div>
+                <div class="info-card-value" id="fingerprint-count">0</div>
+            </div>
+        </div>
+
+        <div class="back-link">
+            This is a demonstration honeypot environment.<br>
+            <a href="login.html">Return to login page</a>
+        </div>
+    </div>
+
+    <script>
+        // Get attacker info
+        const attackLogs = JSON.parse(localStorage.getItem('attackLogs') || '[]');
+        const latestAttack = attackLogs[0];
+        
+        if (latestAttack) {
+            document.getElementById('attacker-ip').textContent = latestAttack.ip;
+            document.getElementById('attempt-count').textContent = latestAttack.attempts;
+        }
+
+        // Session timer
+        let sessionSeconds = 0;
+        setInterval(() => {
+            sessionSeconds++;
+            const minutes = Math.floor(sessionSeconds / 60);
+            const seconds = sessionSeconds % 60;
+            document.getElementById('session-time').textContent = 
+                `${minutes}:${String(seconds).padStart(2, '0')}`;
+        }, 1000);
+
+        // Packet counter
+        let packetCount = 0;
+        setInterval(() => {
+            packetCount += Math.floor(Math.random() * 5) + 1;
+            document.getElementById('packet-count').textContent = packetCount;
+        }, 500);
+
+        // Fingerprint counter
+        let fingerprintCount = 0;
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                fingerprintCount++;
+                document.getElementById('fingerprint-count').textContent = fingerprintCount;
+            }
+        }, 2000);
+
+        // Add random terminal output
+        const terminalMessages = [
+            '[INFO] Browser fingerprint captured',
+            '[INFO] Geolocation data logged',
+            '[INFO] TLS handshake analyzed',
+            '[INFO] HTTP headers stored',
+            '[WARNING] Suspicious API query detected',
+            '[INFO] Network signature recorded'
+        ];
+
+        setInterval(() => {
+            if (Math.random() > 0.6) {
+                const terminal = document.getElementById('terminal-output');
+                const message = terminalMessages[Math.floor(Math.random() * terminalMessages.length)];
+                const line = document.createElement('div');
+                line.className = 'terminal-line';
+                line.textContent = message;
+                terminal.appendChild(line);
+                
+                // Keep only last 15 lines
+                while (terminal.children.length > 15) {
+                    terminal.removeChild(terminal.children[0]);
+                }
+            }
+        }, 4000);
+    </script>
+</body>
+</html>

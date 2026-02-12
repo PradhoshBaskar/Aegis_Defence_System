@@ -1,0 +1,17 @@
+[
+    {
+        "test": "recon",
+        "status": "PASS",
+        "details": "Stealth Mode Perfect (0 ports found)."
+    },
+    {
+        "test": "brute_force",
+        "status": "PASS",
+        "details": "No open port found to attack."
+    },
+    {
+        "test": "zombie_connection",
+        "status": "PASS",
+        "details": "No open port found to test persistence."
+    }
+]
